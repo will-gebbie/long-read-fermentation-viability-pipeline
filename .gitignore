@@ -1,0 +1,9 @@
+# Sample data and outputs — never commit
+input_data/
+results/
+
+# Large per-machine assets (see README)
+microscopy/cellpose_model
+
+# Snakemake state
+.snakemake/

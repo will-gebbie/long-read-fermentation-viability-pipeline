@@ -1,0 +1,10 @@
+name: fcs-counter
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.12
+  - numpy=1.26.4
+  - fcsparser
+  - hdbscan
+  - pip

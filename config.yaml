@@ -1,0 +1,86 @@
+# =============================================================================
+# Viability CLI — run-all configuration
+# =============================================================================
+# Edit the values below for your sample and machine, then run from the repo root:
+#
+#   conda activate snakemake
+#   snakemake --use-conda --conda-prefix ~/.snakemake-envs --cores <N>
+#
+# Add -n for a dry run. Fields marked PER-MACHINE point at large assets that are
+# not shipped with this repo — see the README for where to get them.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# General
+# -----------------------------------------------------------------------------
+
+# Directory holding the input files for ONE sample. Expected layout:
+#   <input_dir>/flow_cytometry/     exactly one .fcs file          (counter)
+#   <input_dir>/microscopy_images/  one or more .tif images         (microscopy)
+#   <input_dir>/reads/              exactly one .fastq.gz file      (strain_composition, contamination)
+#   <input_dir>/references/         one <strain>.fna per strain     (strain_composition)
+# Keep the trailing slash.
+input_dir: "input_data/"
+
+# Directory where all result CSV/TSV files are written (created if missing).
+# Keep the trailing slash.
+outdir: "results/"
+
+# Identifier for this sample. Written into every output table and used to name
+# the kraken2 outputs (<sample_id>.kreport, <sample_id>.contamination.tsv).
+sample_id: "SAMPLE_01"
+
+# Genus of the organism you expect to be culturing (e.g. "Escherichia").
+# In the contamination report, taxa whose name contains this genus are labelled
+# with it; everything else is labelled "other".
+target_genus: "Escherichia"
+
+# -----------------------------------------------------------------------------
+# counter — flow cytometry cell counts
+# Input: <input_dir>/flow_cytometry/*.fcs  ->  Output: <outdir>/counter.csv
+# -----------------------------------------------------------------------------
+counter:
+  # Optical density (OD) of the culture the flow sample was taken from.
+  # Used to report cells/uL normalised per OD unit. Set to 0 to skip that column.
+  od: 1.0
+  # Volume of sample acquired by the cytometer, in microlitres.
+  # Used to convert the event count into cells/uL. Set to 0 to skip.
+  uL: 50
+
+# -----------------------------------------------------------------------------
+# microscopy — live/dead viability from microscopy images (cellpose)
+# Input: <input_dir>/microscopy_images/*.tif  ->  Output: <outdir>/microscopy.csv
+# -----------------------------------------------------------------------------
+
+# true to run the microscopy analysis, false to skip it.
+run_micro: true
+
+microscopy:
+  # PER-MACHINE: path to a trained cellpose model file (see README).
+  model: "path/to/cellpose_model"
+  # true to run cellpose on a CUDA GPU; false to run on CPU (much slower).
+  gpu: true
+
+# -----------------------------------------------------------------------------
+# strain_composition — relative strain abundance from long reads (EM)
+# Input: <input_dir>/reads/*.fastq.gz + references  ->  Output: <outdir>/strain_composition.csv
+# -----------------------------------------------------------------------------
+strain_composition:
+  # Directory of reference genomes, one FASTA per strain named <strain>.fna.
+  # The filename stem is used as the strain name in the output.
+  # Set to "" to skip this analysis.
+  refdir: "input_data/references/"
+
+# -----------------------------------------------------------------------------
+# contamination — taxonomic classification of reads (kraken2)
+# Input: <input_dir>/reads/*.fastq.gz
+# Output: <outdir>/<sample_id>.kreport, <outdir>/<sample_id>.contamination.tsv
+# -----------------------------------------------------------------------------
+
+# true to run the contamination check, false to skip it.
+run_contamination: true
+
+contamination:
+  # PER-MACHINE: path to a kraken2 database directory (see README).
+  # Prebuilt databases: https://benlangmead.github.io/aws-indexes/k2
+  kraken_db: "path/to/kraken2_db/"

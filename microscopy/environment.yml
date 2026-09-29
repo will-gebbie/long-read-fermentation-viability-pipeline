@@ -1,0 +1,11 @@
+name: cellpose
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - cellpose==4.1.1
+      - opencv-python-headless==4.13.0.92
+      - pandas
